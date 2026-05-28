@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Age Calculator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-1:      #060812;
+      --bg-2:      #0f0a2a;
+      --card:      #12172b;
+      --card-2:    #1a2040;
+      --border:    rgba(255,255,255,0.07);
+      --cyan:      #22d3ee;
+      --cyan-dim:  rgba(34,211,238,0.12);
+      --violet:    #818cf8;
+      --violet-dim:rgba(129,140,248,0.12);
+      --pink:      #f472b6;
+      --green:     #34d399;
+      --white:     #f1f5f9;
+      --muted:     #64748b;
+      --muted2:    #94a3b8;
+      --error:     #f87171;
+      --radius:    14px;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top left, #1a0533 0%, var(--bg-1) 50%, var(--bg-2) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 32px 16px;
+    }
+
+    .wrapper { width: 100%; max-width: 600px; }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 32px; }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(34,211,238,0.25);
+      color: var(--cyan);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: clamp(32px, 6vw, 50px);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+    .header h1 span {
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header p { margin-top: 10px; color: var(--muted2); font-size: 15px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Input section ── */
+    .input-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted2);
+      margin-bottom: 14px;
+    }
+
+    .dob-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1.4fr;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .select-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .select-wrap label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select {
+      width: 100%;
+      background: var(--card-2);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      border-radius: 9px;
+      color: var(--white);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 14px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    select:focus { border-color: var(--cyan); }
+    select.has-error { border-color: var(--error); }
+    select option { background: #1a2040; }
+
+    .error-msg {
+      font-size: 12px;
+      color: var(--error);
+      font-weight: 500;
+      min-height: 18px;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.12s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:hover { opacity: 0.88; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--violet) 100%);
+      color: #060812;
+      flex: 2;
+    }
+    .btn-reset {
+      background: rgba(255,255,255,0.06);
+      color: var(--muted2);
+      border: 1px solid rgba(255,255,255,0.08);
+      flex: 1;
+    }
+
+    /* ── Results ── */
+    .results-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 16px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+    .results-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Age hero */
+    .age-hero {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .age-unit {
+      text-align: center;
+      flex: 1;
+    }
+    .age-value {
+      font-size: clamp(40px, 8vw, 62px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+    .age-unit:nth-child(1) .age-value { color: var(--cyan); }
+    .age-unit:nth-child(3) .age-value { color: var(--violet); }
+    .age-unit:nth-child(5) .age-value { color: var(--pink); }
+
+    .age-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .age-sep {
+      font-size: 40px;
+      font-weight: 900;
+      color: var(--muted);
+      opacity: 0.3;
+      padding: 0 4px;
+      margin-bottom: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Details grid */
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 480px) { .details-grid { grid-template-columns: 1fr; } }
+
+    .detail-box {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .detail-icon { font-size: 20px; margin-bottom: 6px; }
+    .detail-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .detail-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--white);
+      line-height: 1.3;
+    }
+    .detail-value.accent { color: var(--green); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: rgba(100,116,139,0.5);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <div class="header">
+    <div class="logo">✦ &nbsp;CodeAlpha · Task 1</div>
+    <h1>Age <span>Calculator</span></h1>
+    <p>Enter your date of birth to find your exact age</p>
+  </div>
+
+  <!-- Input card -->
+  <div class="card">
+    <div class="input-label">📅 &nbsp;Date of Birth</div>
+
+    <div class="dob-row">
+      <div class="select-wrap">
+        <label for="sel-day">Day</label>
+        <select id="sel-day">
+          <option value="">DD</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <label for="sel-month">Month</label>
+        <select id="sel-month">
+          <option value="">Month</option>
+          <option value="0">January</option>
+          <option value="1">February</option>
+          <option value="2">March</option>
+          <option value="3">April</option>
+          <option value="4">May</option>
+          <option value="5">June</option>
+          <option value="6">July</option>
+          <option value="7">August</option>
+          <option value="8">September</option>
+          <option value="9">October</option>
+          <option value="10">November</option>
+          <option value="11">December</option>
+        </select>
+      </div>
+      <div class="select-wrap">
+        <label for="sel-year">Year</label>
+        <select id="sel-year">
+          <option value="">YYYY</option>
+        </select>
+      </div>
+    </div>
+
+    <span class="error-msg" id="err-dob"></span>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="calculate()">Calculate Age</button>
+      <button class="btn btn-reset" onclick="resetForm()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Results card -->
+  <div class="results-card" id="results">
+
+    <div class="age-hero">
+      <div class="age-unit">
+        <div class="age-value" id="res-years">0</div>
+        <div class="age-label">Years</div>
+      </div>
+      <div class="age-sep">·</div>
+      <div class="age-unit">
+        <div class="age-value" id="res-months">0</div>
+        <div class="age-label">Months</div>
+      </div>
+      <div class="age-sep">·</div>
+      <div class="age-unit">
+        <div class="age-value" id="res-days">0</div>
+        <div class="age-label">Days</div>
+      </div>
+    </div>
+
+    <div class="details-grid">
+      <div class="detail-box">
+        <div class="detail-icon">🗓️</div>
+        <div class="detail-label">Born On</div>
+        <div class="detail-value" id="detail-weekday">—</div>
+      </div>
+      <div class="detail-box">
+        <div class="detail-icon">📆</div>
+        <div class="detail-label">Days Lived</div>
+        <div class="detail-value accent" id="detail-total-days">—</div>
+      </div>
+      <div class="detail-box">
+        <div class="detail-icon">🎂</div>
+        <div class="detail-label">Next Birthday</div>
+        <div class="detail-value" id="detail-next-bday">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">CodeAlpha · Web Development Internship · Age Calculator</div>
+
+</div>
+
+<script>
+  const MONTHS = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  /* ── Populate selects ── */
+  (function init() {
+    const dayEl  = document.getElementById('sel-day');
+    const yearEl = document.getElementById('sel-year');
+
+    for (let d = 1; d <= 31; d++) {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = String(d).padStart(2, '0');
+      dayEl.appendChild(opt);
+    }
+
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear; y >= 1900; y--) {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      yearEl.appendChild(opt);
+    }
+  })();
+
+  /* ── Helpers ── */
+  function daysInMonth(month, year) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function setError(msg) {
+    const el = document.getElementById('err-dob');
+    el.textContent = msg;
+    ['sel-day','sel-month','sel-year'].forEach(id => {
+      document.getElementById(id).classList.toggle('has-error', !!msg);
+    });
+  }
+
+  /* ── Calculate ── */
+  function calculate() {
+    setError('');
+
+    const dayVal   = document.getElementById('sel-day').value;
+    const monthVal = document.getElementById('sel-month').value;
+    const yearVal  = document.getElementById('sel-year').value;
+
+    if (!dayVal || monthVal === '' || !yearVal) {
+      setError('Please select a complete date of birth.');
+      return;
+    }
+
+    const day   = parseInt(dayVal,   10);
+    const month = parseInt(monthVal, 10);
+    const year  = parseInt(yearVal,  10);
+
+    /* Check day is valid for the given month/year */
+    if (day > daysInMonth(month, year)) {
+      setError(`${MONTHS[month]} ${year} only has ${daysInMonth(month, year)} days.`);
+      return;
+    }
+
+    const dob   = new Date(year, month, day);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (dob > today) {
+      setError('Date of birth cannot be in the future.');
+      return;
+    }
+
+    /* Age in years, months, days */
+    let years  = today.getFullYear() - dob.getFullYear();
+    let months = today.getMonth()    - dob.getMonth();
+    let days   = today.getDate()     - dob.getDate();
+
+    if (days < 0) {
+      months--;
+      days += daysInMonth(today.getMonth() === 0 ? 11 : today.getMonth() - 1,
+                          today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear());
+    }
+    if (months < 0) { years--; months += 12; }
+
+    /* Total days lived */
+    const totalDays = Math.floor((today - dob) / 86400000);
+
+    /* Day of week born */
+    const weekday = DAYS_OF_WEEK[dob.getDay()];
+
+    /* Next birthday */
+    let nextBday = new Date(today.getFullYear(), month, day);
+    if (nextBday <= today) nextBday.setFullYear(today.getFullYear() + 1);
+    const daysUntil = Math.ceil((nextBday - today) / 86400000);
+    const nextBdayStr = daysUntil === 0
+      ? '🎉 Today!'
+      : daysUntil === 1
+      ? 'Tomorrow!'
+      : `In ${daysUntil} days`;
+
+    /* Populate */
+    document.getElementById('res-years').textContent        = years;
+    document.getElementById('res-months').textContent       = months;
+    document.getElementById('res-days').textContent         = days;
+    document.getElementById('detail-weekday').textContent   = weekday;
+    document.getElementById('detail-total-days').textContent = totalDays.toLocaleString();
+    document.getElementById('detail-next-bday').textContent = nextBdayStr;
+
+    const results = document.getElementById('results');
+    results.classList.add('visible');
+    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ── Reset ── */
+  function resetForm() {
+    setError('');
+    ['sel-day','sel-month','sel-year'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    const results = document.getElementById('results');
+    results.classList.remove('visible');
+  }
+
+  /* Enter key support */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+</script>
+
+</body>
+</html>
